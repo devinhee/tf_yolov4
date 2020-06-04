@@ -54,7 +54,7 @@ class YoloTrain(object):
                                                 self.true_sbboxes, self.true_mbboxes, self.true_lbboxes,
                                                 iou_use, focal_use, label_smoothing)
             self.loss = self.iou_loss + self.conf_loss + self.prob_loss
-            self.loss = tf.Print(self.loss, [self.iou_loss, self.conf_loss, self.prob_loss], message='loss: ')
+            # self.loss = tf.Print(self.loss, [self.iou_loss, self.conf_loss, self.prob_loss], message='loss: ')
 
         with tf.name_scope('learn_rate'):
             self.global_step = tf.Variable(1.0, dtype=tf.float64, trainable=False, name='global_step')

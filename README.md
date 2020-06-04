@@ -1,11 +1,20 @@
 # tf_yolov4
+
+[![license](https://img.shields.io/github/license/mashape/apistatus.svg)](LICENSE)
+
 ## Introduction
 
 A tensorflow implementation of YOLOv4 inspired by [https://github.com/AlexeyAB/darknet](https://github.com/AlexeyAB/darknet).
 
 Frame code from [https://github.com/YunYang1994/tensorflow-yolov3](https://github.com/YunYang1994/tensorflow-yolov3).
 
-Used Backbone: CSPDarknet53; Neck: SPP, PAN; Head: YOLOv3; Loss: DIOU，CIOU，Focal_Loss; Other: Label_Smoothing
+Backbone: [CSPDarknet53](https://arxiv.org/pdf/1911.11929.pdf); 
+
+Neck: [SPP](https://arxiv.org/abs/1406.4729), [PAN](https://arxiv.org/abs/1803.01534); 
+
+Head: YOLOv3; 
+
+Loss: [DIOU CIOU](https://arxiv.org/pdf/1911.08287v1.pdf), [Focal_Loss](https://arxiv.org/abs/1708.02002);  Other: Label_Smoothing
 
 ## Environment
 
@@ -41,6 +50,15 @@ Inference
 ```
 python image_demo.py
 ```
+
+### train
+
+to yolov4/config.py add your own path.
+
+```
+python train.py
+```
+
 ---
 
 ### Reference
