@@ -155,33 +155,31 @@ class YoloTrain(object):
                 self.summary_writer.add_summary(summary, global_step_val)
                 pbar.set_description("train loss: %.2f" %train_step_loss)
 
-            # for test_data in self.testset:
-            #     test_step_loss = self.sess.run( self.loss, feed_dict={
-            #                                     self.input_data:   test_data[0],
-            #                                     self.label_sbbox:  test_data[1],
-            #                                     self.label_mbbox:  test_data[2],
-            #                                     self.label_lbbox:  test_data[3],
-            #                                     self.true_sbboxes: test_data[4],
-            #                                     self.true_mbboxes: test_data[5],
-            #                                     self.true_lbboxes: test_data[6],
-            #                                     self.trainable:    False,
-            #     })
-            #
-            #     test_epoch_loss.append(test_step_loss)
+            for test_data in self.testset:
+                test_step_loss = self.sess.run( self.loss, feed_dict={
+                                                self.input_data:   test_data[0],
+                                                self.label_sbbox:  test_data[1],
+                                                self.label_mbbox:  test_data[2],
+                                                self.label_lbbox:  test_data[3],
+                                                self.true_sbboxes: test_data[4],
+                                                self.true_mbboxes: test_data[5],
+                                                self.true_lbboxes: test_data[6],
+                                                self.trainable:    False,
+                })
 
-            # train_epoch_loss, test_epoch_loss = np.mean(train_epoch_loss), np.mean(test_epoch_loss)
+                test_epoch_loss.append(test_step_loss)
+
+            train_epoch_loss, test_epoch_loss = np.mean(train_epoch_loss), np.mean(test_epoch_loss)
             train_epoch_loss = np.mean(train_epoch_loss)
-            # ckpt_file = "./checkpoint/yolov4_test_loss=%.4f.ckpt" % test_epoch_loss
-            ckpt_file = "./checkpoint/yolov4_train_loss=%.4f.ckpt" % train_epoch_loss
+            ckpt_file = "./checkpoint/yolov4_test_loss=%.4f.ckpt" % test_epoch_loss
             log_time = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(time.time()))
-            # print("=> Epoch: %2d Time: %s Train loss: %.2f Test loss: %.2f Saving %s ..."
             if saving == 0.0:
                 saving = train_epoch_loss
                 print("=> Epoch: %2d Time: %s Train loss: %.2f"
                       % (epoch, log_time, train_epoch_loss))
             elif saving > train_epoch_loss:
-                print("=> Epoch: %2d Time: %s Train loss: %.2f  Saving %s ..."
-                                %(epoch, log_time, train_epoch_loss, ckpt_file))
+                print("=> Epoch: %2d Time: %s Train loss: %.2f Test loss: %.2f Saving %s ..."
+                                %(epoch, log_time, train_epoch_loss, test_epoch_loss, ckpt_file))
                 self.saver.save(self.sess, ckpt_file, global_step=epoch)
                 saving = train_epoch_loss
             else:
