@@ -3,7 +3,7 @@ import tensorflow as tf
 from yolov4.model import YOLOV4
 
 iput_size = 416
-darknet_weights = '/media/devin/F/Ebdatasets/keras_yolo4/model_data/yolov4.weights'
+darknet_weights = './yolov4.weights'
 ckpt_file = './checkpoint/yolov4_coco.ckpt'
 
 def load_weights(var_list, weights_file):
