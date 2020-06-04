@@ -10,7 +10,7 @@ return_elements = ["input/input_data:0",
                    "pred_sbbox/concat_2:0",
                    "pred_mbbox/concat_2:0",
                    "pred_lbbox/concat_2:0"]
-pb_file         = "./checkpoint1/yolov4.pb"
+pb_file         = "./checkpoint/yolov4.pb"
 image_path      = "./data/images/road.jpeg"
 num_classes     = 80
 input_size      = 416
