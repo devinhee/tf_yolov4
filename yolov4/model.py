@@ -489,7 +489,7 @@ class YOLOV4(object):
         :param y_pred: Predicted logits, tensor of shape (?, num_boxes, num_classes).
         :param gamma:  Exponent of the modulating factor (1 - p_t) ^ gamma.
         :param alpha:  Optional alpha weighting factor to balance positives vs negatives.
-        :return:       Sigmoid focal loss, tensor of shape (?, num_boxes).
+        :return:       Focal factor.
         """
         focal_loss = alpha * tf.pow(tf.abs(y_true - y_pred), gamma)
         return focal_loss
