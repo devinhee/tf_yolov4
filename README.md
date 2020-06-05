@@ -30,16 +30,23 @@ Tensorflow 1.13.1
 2. Convert the Darknet YOLOv4 model to a tf model.
 3. Run YOLOv4 detection.
 
+Running from_darknet_weights_to_ckpt.py will get tf yolov4 weight file yolov4_coco.ckpt.
+
 ```
 python from_darknet_weights_to_ckpt.py
 ```
 
-Running from_darknet_weights_to_ckpt.py will get tf yolov4 weight file yolov4_coco.ckpt.
+Running ckpt2pb.py will get tf yolov4 weight file yolov4.pb.
 
 ```
 python ckpt2pb.py
 ```
-Running ckpt2pb.py will get tf yolov4 weight file yolov4.pb.
+
+Or running from_darknet_weights_to_pb.py directly.
+
+```
+python from_darknet_weights_to_pb.py
+```
 
 
 
