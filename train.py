@@ -45,7 +45,7 @@ class YoloTrain(object):
 
         with tf.name_scope("define_loss"):
             iou_use = 1  # (0, 1, 2) ==> (giou_loss, diou_loss, ciou_loss)
-            focal_use = 2  # (0, 1, 2) ==> (normal, sigmoid_focal_loss, focal_loss)
+            focal_use = 0  # (0, 1, 2) ==> (normal, sigmoid_focal_loss, focal_loss)
             label_smoothing = 0
             self.model = YOLOV4(self.input_data, self.trainable)
             self.net_var = tf.global_variables()
