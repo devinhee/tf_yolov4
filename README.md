@@ -14,7 +14,7 @@ Neck: [SPP](https://arxiv.org/abs/1406.4729), [PAN](https://arxiv.org/abs/1803.0
 
 Head: YOLOv3(Leaky_ReLU); 
 
-Loss: [DIOU CIOU](https://arxiv.org/pdf/1911.08287v1.pdf), [Focal_Loss](https://arxiv.org/abs/1708.02002);  Other: [Label_Smoothing](https://arxiv.org/pdf/1906.02629.pdf)
+Loss: [DIOU CIOU](https://arxiv.org/pdf/1911.08287v1.pdf), [Focal_Loss](https://arxiv.org/abs/1708.02002);  Other: [Label_Smoothing](https://arxiv.org/pdf/1906.02629.pdf);
 
 ## Environment
 
