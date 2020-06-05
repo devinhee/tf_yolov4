@@ -495,7 +495,8 @@ class YOLOV4(object):
         return focal_loss
 
     def _label_smoothing(self, y_true, label_smoothing):
-        label_smoothing = tf.constant(label_smoothing, dtype=tf.float32())
+        """Label smoothing. source: https://arxiv.org/pdf/1906.02629.pdf"""
+        label_smoothing = tf.constant(label_smoothing, dtype=tf.float32)
         return y_true * (1.0 - label_smoothing) + 0.5 * label_smoothing
 
     def yolov4_loss(self, conv, pred, label, bboxes, stride, iou_use=1, focal_use=0, label_smoothing=0):
