@@ -464,24 +464,6 @@ class YOLOV4(object):
 
         return ciou
 
-    def sigmoid_focal_loss(self, y_true, y_pred, gamma=2.0, alpha=0.25):
-        """
-        Compute sigmoid focal loss; source:https://arxiv.org/abs/1708.02002
-        :param y_true: Ground truth targets, tensor of shape (?, num_boxes, num_classes).
-        :param y_pred: Predicted logits, tensor of shape (?, num_boxes, num_classes).
-        :param gamma:  Exponent of the modulating factor (1 - p_t) ^ gamma.
-        :param alpha:  Optional alpha weighting factor to balance positives vs negatives.
-        :return:       Sigmoid focal loss, tensor of shape (?, num_boxes).
-        """
-        sigmoid_loss = tf.nn.sigmoid_cross_entropy_with_logits(labels=y_true, logits=y_pred)
-        pred_prob = tf.sigmoid(y_pred)
-        p_t = (y_true * pred_prob) + ((1 - y_true) * (1 - pred_prob))
-        modulating_factor = tf.pow(1.0 - p_t, gamma)
-        alpha_factor = (y_true * alpha + (1 - y_true) * (1 - alpha))
-        sigmoid_focal_loss = modulating_factor * alpha_factor * sigmoid_loss
-
-        return sigmoid_focal_loss
-
     def focal_loss(self, y_true, y_pred, gamma=2.0, alpha=1):
         """
         Compute focal loss; source:https://arxiv.org/abs/1708.02002
@@ -499,7 +481,7 @@ class YOLOV4(object):
         label_smoothing = tf.constant(label_smoothing, dtype=tf.float32)
         return y_true * (1.0 - label_smoothing) + 0.5 * label_smoothing
 
-    def yolov4_loss(self, conv, pred, label, bboxes, stride, iou_use=1, focal_use=0, label_smoothing=0):
+    def yolov4_loss(self, conv, pred, label, bboxes, stride, iou_use=1, focal_use=False, label_smoothing=0):
         """
         Reture yolov4_loss tensor.
         :param conv:            The outputs of yolov4 body, conv_sbbox, conv_mbbox, conv_lbbox
@@ -548,10 +530,7 @@ class YOLOV4(object):
             giou = tf.expand_dims(self.bbox_giou(pred_xywh, label_xywh), axis=-1)
             iou_loss = respond_bbox * bbox_loss_scale * (1 - giou)
 
-        if focal_use == 1:
-            conf_loss = self.sigmoid_focal_loss(respond_bbox, conv_raw_conf)
-            class_loss = self.sigmoid_focal_loss(label_prob, conv_raw_prob)
-        elif focal_use == 2:
+        if focal_use:
             focal = self.focal_loss(respond_bbox, pred_conf)
             conf_loss = focal * (respond_bbox * tf.nn.sigmoid_cross_entropy_with_logits(labels=respond_bbox,
                                                                                logits=conv_raw_conf) +
