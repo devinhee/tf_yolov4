@@ -8,13 +8,13 @@ A tensorflow implementation of YOLOv4 inspired by [https://github.com/AlexeyAB/d
 
 Frame code from [https://github.com/YunYang1994/tensorflow-yolov3](https://github.com/YunYang1994/tensorflow-yolov3).
 
-Backbone: [CSPDarknet53](https://arxiv.org/pdf/1911.11929.pdf), [Mish](https://arxiv.org/abs/1908.08681); 
+Backbone: CSPDarknet53[[1]](https://arxiv.org/pdf/1911.11929.pdf), Mish[[2]](https://arxiv.org/abs/1908.08681); 
 
-Neck: [SPP](https://arxiv.org/abs/1406.4729), [PAN](https://arxiv.org/abs/1803.01534); 
+Neck: SPP[[3]](https://arxiv.org/abs/1406.4729), PAN[[4]](https://arxiv.org/abs/1803.01534); 
 
-Head: YOLOv3(Leaky_ReLU); 
+Head: YOLOv3(Leaky_ReLU)[[10]](https://arxiv.org/abs/1804.02767); 
 
-Loss: [DIOU CIOU](https://arxiv.org/pdf/1911.08287v1.pdf), [Focal_Loss](https://arxiv.org/abs/1708.02002);  Other: [Label_Smoothing](https://arxiv.org/pdf/1906.02629.pdf);
+Loss: DIOU CIOU[[5]](https://arxiv.org/pdf/1911.08287v1.pdf), Focal_Loss[[6]](https://arxiv.org/abs/1708.02002);  Other: Label_Smoothing[[7]](https://arxiv.org/pdf/1906.02629.pdf);
 
 ## Environment
 
@@ -70,8 +70,29 @@ python train.py
 
 ### Reference
 
+[[1] Cross Stage Partial Network (CSPNet)](https://arxiv.org/pdf/1911.11929.pdf)
+
+[[2] A Self Regularized Non-Monotonic Neural Activation Function](https://arxiv.org/abs/1908.08681)
+
+[[3] Spatial Pyramid Pooling in Deep Convolutional Networks for Visual Recognition](https://arxiv.org/abs/1406.4729)
+
+[[4] Path Aggregation Network for Instance Segmentation](https://arxiv.org/abs/1803.01534)
+
+[[5] Distance-IoU Loss: Faster and Better Learning for Bounding Box Regression](https://arxiv.org/pdf/1911.08287v1.pdf)
+
+[[6] Focal Loss for Dense Object Detection](https://arxiv.org/abs/1708.02002)
+
+[[7] When Does Label Smoothing Help?](https://arxiv.org/pdf/1906.02629.pdf)
+
+[[8] Convolutional Block Attention Module](https://arxiv.org/abs/1807.06521)
+
+[[9] YOLOv4: Optimal Speed and Accuracy of Object Detection](https://arxiv.org/abs/2004.10934)
+
+[[10] YOLOv3: An Incremental Improvement](https://arxiv.org/abs/1804.02767)
+
+### Acknowledgment
+
 keras_yolov3 [https://github.com/qqwweee/keras-yolo3](https://github.com/qqwweee/keras-yolo3).
 
 keras_yolov4 [https://github.com/Ma-Dan/keras-yolo4](https://github.com/Ma-Dan/keras-yolo4).
-
 
