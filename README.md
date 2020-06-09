@@ -90,6 +90,8 @@ python train.py
 
 [[10] YOLOv3: An Incremental Improvement](https://arxiv.org/abs/1804.02767)
 
+[[11] Aggregated Residual Transformations for Deep Neural Networks](https://arxiv.org/abs/1611.05431)
+
 ### Acknowledgment
 
 keras_yolov3 [https://github.com/qqwweee/keras-yolo3](https://github.com/qqwweee/keras-yolo3).
