@@ -29,7 +29,7 @@ class YoloTrain(object):
         self.max_bbox_per_scale  = 150
         self.train_logdir        = "./data/log/train"
         self.trainset            = Dataset('train')
-        self.testset             = Dataset('test')
+        self.valset             = Dataset('test')
         self.steps_per_period    = len(self.trainset)
         self.sess                = tf.Session(config=tf.ConfigProto(allow_soft_placement=True))
 
@@ -120,23 +120,27 @@ class YoloTrain(object):
 
     def train(self):
         self.sess.run(tf.global_variables_initializer())
+        frozen_epoch = 0
         try:
             print('=> Restoring weights from: %s ... ' % self.initial_weight)
             self.loader.restore(self.sess, self.initial_weight)
+            if '-' in self.initial_weight:
+                frozen_epoch = self.initial_weight.split('-')[-1]
+                frozen_epoch = int(frozen_epoch)
         except:
             print('=> %s does not exist !!!' % self.initial_weight)
             print('=> Now it starts to train YOLOV4 from scratch ...')
             self.first_stage_epochs = 0
 
         saving = 0.0
-        for epoch in range(1, 1+self.first_stage_epochs+self.second_stage_epochs):
+        for epoch in range(1+frozen_epoch, 1+self.first_stage_epochs+self.second_stage_epochs):
             if epoch <= self.first_stage_epochs:
                 train_op = self.train_op_with_frozen_variables
             else:
                 train_op = self.train_op_with_all_variables
 
             pbar = tqdm(self.trainset)
-            train_epoch_loss, test_epoch_loss = [], []
+            train_epoch_loss, val_epoch_loss = [], []
 
             for train_data in pbar:
                 _, summary, train_step_loss, global_step_val = self.sess.run(
@@ -155,37 +159,37 @@ class YoloTrain(object):
                 self.summary_writer.add_summary(summary, global_step_val)
                 pbar.set_description("train loss: %.2f" %train_step_loss)
 
-            for test_data in self.testset:
+            for val_data in self.valset:
                 test_step_loss = self.sess.run( self.loss, feed_dict={
-                                                self.input_data:   test_data[0],
-                                                self.label_sbbox:  test_data[1],
-                                                self.label_mbbox:  test_data[2],
-                                                self.label_lbbox:  test_data[3],
-                                                self.true_sbboxes: test_data[4],
-                                                self.true_mbboxes: test_data[5],
-                                                self.true_lbboxes: test_data[6],
+                                                self.input_data:   val_data[0],
+                                                self.label_sbbox:  val_data[1],
+                                                self.label_mbbox:  val_data[2],
+                                                self.label_lbbox:  val_data[3],
+                                                self.true_sbboxes: val_data[4],
+                                                self.true_mbboxes: val_data[5],
+                                                self.true_lbboxes: val_data[6],
                                                 self.trainable:    False,
                 })
 
-                test_epoch_loss.append(test_step_loss)
+                val_epoch_loss.append(test_step_loss)
 
-            train_epoch_loss, test_epoch_loss = np.mean(train_epoch_loss), np.mean(test_epoch_loss)
+            train_epoch_loss, val_epoch_loss = np.mean(train_epoch_loss), np.mean(val_epoch_loss)
             train_epoch_loss = np.mean(train_epoch_loss)
-            ckpt_file = "./checkpoint/yolov4_test_loss=%.4f.ckpt" % test_epoch_loss
+            ckpt_file = "./checkpoint/yolov4_test_loss=%.4f.ckpt" % val_epoch_loss
             log_time = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(time.time()))
             if saving == 0.0:
-                saving = train_epoch_loss
-                print("=> Epoch: %2d Time: %s Train loss: %.2f"
-                      % (epoch, log_time, train_epoch_loss))
-            elif saving > train_epoch_loss:
-                print("=> Epoch: %2d Time: %s Train loss: %.2f Test loss: %.2f Saving %s ..."
-                                %(epoch, log_time, train_epoch_loss, test_epoch_loss, ckpt_file))
+                saving = val_epoch_loss
+                print("=> Epoch: %2d Time: %s Val loss: %.2f"
+                      % (epoch, log_time, val_epoch_loss))
+            elif saving > val_epoch_loss:
+                print("=> Epoch: %2d Time: %s Train loss: %.2f Val loss: %.2f Saving %s ..."
+                                %(epoch, log_time, train_epoch_loss, val_epoch_loss, ckpt_file))
                 self.saver.save(self.sess, ckpt_file, global_step=epoch)
-                saving = train_epoch_loss
+                saving = val_epoch_loss
             else:
-                print("=> Epoch: %2d Time: %s Train loss: %.2f"
-                      % (epoch, log_time, train_epoch_loss))
-        self.saver.save(self.sess, '')
+                print("=> Epoch: %2d Time: %s Val loss: %.2f"
+                      % (epoch, log_time, val_epoch_loss))
+
 
 
 if __name__ == '__main__': YoloTrain().train()
