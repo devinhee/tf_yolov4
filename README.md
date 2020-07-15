@@ -94,6 +94,8 @@ python train.py
 
 ### Acknowledgment
 
+#### *Note*: Not recommendd to use this keras_yoov4 repository, it's difficult for the repository to find object. 
+
 keras_yolov3 [https://github.com/qqwweee/keras-yolo3](https://github.com/qqwweee/keras-yolo3).
 
 keras_yolov4 [https://github.com/Ma-Dan/keras-yolo4](https://github.com/Ma-Dan/keras-yolo4).
