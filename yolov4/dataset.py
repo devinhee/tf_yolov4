@@ -177,7 +177,7 @@ class Dataset(object):
         inter_area = inter_section[..., 0] * inter_section[..., 1]
         union_area = boxes1_area + boxes2_area - inter_area
 
-        return inter_area / union_area
+        return tf.compat.v1.div_no_nan(inter_area, union_area)
 
     def preprocess_true_boxes(self, bboxes):
 

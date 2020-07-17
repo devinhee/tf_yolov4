@@ -133,6 +133,7 @@ class YoloTrain(object):
             self.first_stage_epochs = 0
 
         saving = 0.0
+        early_stop = 0
         for epoch in range(1+frozen_epoch, 1+self.first_stage_epochs+self.second_stage_epochs):
             if epoch <= self.first_stage_epochs:
                 train_op = self.train_op_with_frozen_variables
@@ -160,7 +161,7 @@ class YoloTrain(object):
                 pbar.set_description("train loss: %.2f" %train_step_loss)
 
             for val_data in self.valset:
-                test_step_loss = self.sess.run( self.loss, feed_dict={
+                val_step_loss = self.sess.run( self.loss, feed_dict={
                                                 self.input_data:   val_data[0],
                                                 self.label_sbbox:  val_data[1],
                                                 self.label_mbbox:  val_data[2],
@@ -171,11 +172,11 @@ class YoloTrain(object):
                                                 self.trainable:    False,
                 })
 
-                val_epoch_loss.append(test_step_loss)
+                val_epoch_loss.append(val_step_loss)
 
             train_epoch_loss, val_epoch_loss = np.mean(train_epoch_loss), np.mean(val_epoch_loss)
             train_epoch_loss = np.mean(train_epoch_loss)
-            ckpt_file = "./checkpoint/yolov4_test_loss=%.4f.ckpt" % val_epoch_loss
+            ckpt_file = "./checkpoint/yolov4_val_loss=%.4f.ckpt" % val_epoch_loss
             log_time = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(time.time()))
             if saving == 0.0:
                 saving = val_epoch_loss
@@ -186,10 +187,14 @@ class YoloTrain(object):
                                 %(epoch, log_time, train_epoch_loss, val_epoch_loss, ckpt_file))
                 self.saver.save(self.sess, ckpt_file, global_step=epoch)
                 saving = val_epoch_loss
+                early_stop = 0
             else:
+                early_stop += 1
                 print("=> Epoch: %2d Time: %s Val loss: %.2f"
                       % (epoch, log_time, val_epoch_loss))
-
+                if early_stop > 5:
+                    self.sess.close()
+                    break
 
 
 if __name__ == '__main__': YoloTrain().train()

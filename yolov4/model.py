@@ -340,7 +340,7 @@ class YOLOV4(object):
         inter_section = tf.maximum(right_down - left_up, 0.0)
         inter_area = inter_section[..., 0] * inter_section[..., 1]
         union_area = boxes1_area + boxes2_area - inter_area
-        iou = 1.0 * inter_area / union_area
+        iou = 1.0 * tf.compat.v1.div_no_nan(inter_area, union_area)
 
         return iou
 
@@ -370,13 +370,13 @@ class YOLOV4(object):
         inter_section = tf.maximum(right_down - left_up, 0.0)
         inter_area = inter_section[..., 0] * inter_section[..., 1]
         union_area = boxes1_area + boxes2_area - inter_area
-        iou = inter_area / union_area
+        iou = tf.compat.v1.div_no_nan(inter_area, union_area)
 
         enclose_left_up = tf.minimum(boxes1[..., :2], boxes2[..., :2])
         enclose_right_down = tf.maximum(boxes1[..., 2:], boxes2[..., 2:])
         enclose = tf.maximum(enclose_right_down - enclose_left_up, 0.0)
         enclose_area = enclose[..., 0] * enclose[..., 1]
-        giou = iou - 1.0 * (enclose_area - union_area) / enclose_area
+        giou = iou - 1.0 * tf.compat.v1.div_no_nan(enclose_area - union_area, enclose_area)
 
         return giou
 
@@ -407,7 +407,7 @@ class YOLOV4(object):
         inter_section = tf.maximum(right_down - left_up, 0.0)
         inter_area = inter_section[..., 0] * inter_section[..., 1]
         union_area = boxes1_area + boxes2_area - inter_area
-        iou = 1.0 * inter_area / union_area
+        iou = 1.0 * tf.compat.v1.div_no_nan(inter_area, union_area)
 
         center_distance = tf.reduce_sum(tf.square(boxes1_center -boxes2_center), axis=-1)
         enclose_left_up = tf.minimum(boxes1[..., :2], boxes2[..., :2])
@@ -415,7 +415,7 @@ class YOLOV4(object):
         enclose_wh = tf.maximum(enclose_right_down - enclose_left_up, 0.0)
         enclose_diagonal = tf.reduce_sum(tf.square(enclose_wh), axis=-1)
 
-        diou = iou - 1.0 * center_distance / (enclose_diagonal + 1e-7)
+        diou = iou - 1.0 * tf.compat.v1.div_no_nan(center_distance, enclose_diagonal)
 
         return diou
 
@@ -448,18 +448,18 @@ class YOLOV4(object):
         inter_section = tf.maximum(right_down - left_up, 0.0)
         inter_area = inter_section[..., 0] * inter_section[..., 1]
         union_area = boxes1_area + boxes2_area - inter_area
-        iou = 1.0 * inter_area / union_area
+        iou = 1.0 * tf.compat.v1.div_no_nan(inter_area, union_area)
 
         center_distance = tf.reduce_sum(tf.square(boxes1_center -boxes2_center), axis=-1)
         enclose_left_up = tf.minimum(boxes1[..., :2], boxes2[..., :2])
         enclose_right_down = tf.maximum(boxes1[..., 2:], boxes2[..., 2:])
         enclose_wh = tf.maximum(enclose_right_down - enclose_left_up, 0.0)
         enclose_diagonal = tf.reduce_sum(tf.square(enclose_wh), axis=-1)
-        diou = iou - 1.0 * center_distance / (enclose_diagonal + 1e-7)
+        diou = iou - 1.0 * tf.compat.v1.div_no_nan(center_distance, enclose_diagonal)
 
         v = 4 / (np.pi * np.pi) * (tf.square(tf.math.atan2(boxes1_1[..., 2], boxes1_1[..., 3]) -
                                              tf.math.atan2(boxes2_1[..., 2], boxes2_1[..., 3])))
-        alp = v / (1.0 - iou + v)
+        alp = tf.compat.v1.div_no_nan(v , 1.0 - iou + v)
         ciou = diou - alp * v
 
         return ciou
@@ -510,7 +510,7 @@ class YOLOV4(object):
         label_xywh = label[:, :, :, :, 0:4]
         respond_bbox = label[:, :, :, :, 4:5]
         label_prob = label[:, :, :, :, 5:]
-        if label_smoothing:
+        if label_smoothing != 0:
             label_prob = self._label_smoothing(label_prob, label_smoothing)
 
         iou = self.bbox_iou(pred_xywh[:, :, :, :, np.newaxis, :], bboxes[:, np.newaxis, np.newaxis, np.newaxis, :, :])
