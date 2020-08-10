@@ -4,7 +4,7 @@
 
 Train set: VOCtrainval_11-May-2012; 
 Test set: VOCtest_06-Nov-2007; 
-Weights: [yolov4_voc.pb](https://github.com/devinhee/tf_yolov4/blob/master/mAP/VOC_mAP/).
+Weights: [yolov4_voc.pb](https://pan.baidu.com/s/1GaXn32_F_VHBtXVskHGfWg). passwd: fwkc
 
 **GeForce GTX 1080 Ti：**
 
