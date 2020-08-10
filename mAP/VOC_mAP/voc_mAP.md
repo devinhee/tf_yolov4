@@ -10,7 +10,8 @@ Weights: [yolov4_voc.pb](https://github.com/devinhee/tf_yolov4/blob/master/mAP/V
 
 mAP: 59.77%
 
-|         Network        | Network Size | FPS(avg) |    mAP   | 
+|         Network        | Network Size | FPS(avg) |    mAP   |
+|:----------------------:|:------------:|:--------:|:--------:|
 | Darknet53_spp_pan_ciou |    512x512   |    28    |**59.11%**|
 
 ![mAP_Graph](https://github.com/devinhee/tf_yolov4/blob/master/mAP/VOC_mAP/mAP.png)
