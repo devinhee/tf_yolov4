@@ -2,8 +2,8 @@
 
 ## Introduction
 
-Train set: VOCtrainval_11-May-2012,
-Test set: VOCtest_06-Nov-2007,
+Train set: VOCtrainval_11-May-2012; 
+Test set: VOCtest_06-Nov-2007; 
 Weights: [yolov4_voc.pb](https://https://github.com/devinhee/tf_yolov4/blob/master/mAP/VOC_mAP/mAP.png).
 
 **GeForce GTX 1080 Ti：**
