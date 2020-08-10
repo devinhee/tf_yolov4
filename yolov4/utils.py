@@ -6,6 +6,7 @@ import numpy as np
 import tensorflow as tf
 from yolov4.config import cfg
 
+
 def read_class_names(class_file_name):
     '''loads class name from a file'''
     names = {}
@@ -27,11 +28,11 @@ def image_preporcess(image, target_size, gt_boxes=None):
 
     image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB).astype(np.float32)
 
-    ih, iw    = target_size
-    h,  w, _  = image.shape
+    ih, iw = target_size
+    h,  w, _ = image.shape
 
     scale = min(iw/w, ih/h)
-    nw, nh  = int(scale * w), int(scale * h)
+    nw, nh = int(scale * w), int(scale * h)
     image_resized = cv2.resize(image, (nw, nh))
 
     image_paded = np.full(shape=[ih, iw, 3], fill_value=128.0)
@@ -84,7 +85,6 @@ def draw_bbox(image, bboxes, classes=read_class_names(cfg.YOLO.CLASSES), show_la
     return image
 
 
-
 def bboxes_iou(boxes1, boxes2):
 
     boxes1 = np.array(boxes1)
@@ -93,25 +93,15 @@ def bboxes_iou(boxes1, boxes2):
     boxes1_area = (boxes1[..., 2] - boxes1[..., 0]) * (boxes1[..., 3] - boxes1[..., 1])
     boxes2_area = (boxes2[..., 2] - boxes2[..., 0]) * (boxes2[..., 3] - boxes2[..., 1])
 
-    left_up       = np.maximum(boxes1[..., :2], boxes2[..., :2])
-    right_down    = np.minimum(boxes1[..., 2:], boxes2[..., 2:])
+    left_up = np.maximum(boxes1[..., :2], boxes2[..., :2])
+    right_down = np.minimum(boxes1[..., 2:], boxes2[..., 2:])
 
     inter_section = np.maximum(right_down - left_up, 0.0)
-    inter_area    = inter_section[..., 0] * inter_section[..., 1]
-    union_area    = boxes1_area + boxes2_area - inter_area
-    ious          = np.maximum(1.0 * inter_area / union_area, np.finfo(np.float32).eps)
-
-    # center_distance = tf.square(boxes1[..., :2] - boxes2[..., :2])
-    # enclose_left_up = tf.minimum(boxes1_1[..., :2], boxes2_2[..., :2])
-    # enclose_right_down = tf.maximum(boxes1_1[..., 2:], boxes2_2[..., 2:])
-    # enclose_wh = tf.maximum(enclose_right_down - enclose_left_up, 0.0)
-    #
-    # enclose_diagonal = tf.square(enclose_wh)
-    #
-    # diou = iou - 1.0 * center_distance / (enclose_diagonal + 1e-9)
+    inter_area = inter_section[..., 0] * inter_section[..., 1]
+    union_area = boxes1_area + boxes2_area - inter_area
+    ious = np.maximum(1.0 * inter_area / (union_area + 1e-7), np.finfo(np.float32).eps)
 
     return ious
-
 
 
 def read_pb_return_tensors(graph, pb_file, return_elements):

@@ -2,9 +2,6 @@ import numpy as np
 import tensorflow as tf
 from yolov4.model import YOLOV4
 
-iput_size = 416
-darknet_weights = './yolov4.weights'
-ckpt_file = './checkpoint/yolov4_coco.ckpt'
 
 def load_weights(var_list, weights_file):
     """
@@ -43,8 +40,7 @@ def load_weights(var_list, weights_file):
                 bias = var2
                 bias_shape = bias.shape.as_list()
                 bias_params = np.prod(bias_shape)
-                bias_weights = weights[ptr:ptr +
-                                           bias_params].reshape(bias_shape)
+                bias_weights = weights[ptr:ptr + bias_params].reshape(bias_shape)
                 ptr += bias_params
                 assign_ops.append(
                     tf.assign(bias, bias_weights, validate_shape=True))
@@ -65,15 +61,20 @@ def load_weights(var_list, weights_file):
             i += 1
     print('ptr:', ptr)
     return assign_ops
-    
-with tf.name_scope('input'):
-    input_data = tf.placeholder(dtype=tf.float32,shape=(None, iput_size, iput_size, 3), name='input_data')
-model = YOLOV4(input_data, trainable=False)
-load_ops = load_weights(tf.global_variables(), darknet_weights)
 
-saver = tf.train.Saver(tf.global_variables())
 
-with tf.Session() as sess:
-    sess.run(load_ops)
-    save_path = saver.save(sess, save_path=ckpt_file)
-    print('Model saved in path: {}'.format(save_path))
+if __name__ == '__main__':
+    iput_size = 512
+    darknet_weights = './data/model/yolov4.weights'
+    ckpt_file = './checkpoint_yolov4/yolov4_coco.ckpt'
+    with tf.name_scope('input'):
+        input_data = tf.placeholder(dtype=tf.float32, shape=(None, iput_size, iput_size, 3), name='input_data')
+    model = YOLOV4(input_data, trainable=False)
+    load_ops = load_weights(tf.global_variables(), darknet_weights)
+
+    saver = tf.train.Saver(tf.global_variables())
+
+    with tf.Session() as sess:
+        sess.run(load_ops)
+        save_path = saver.save(sess, save_path=ckpt_file)
+        print('Model saved in path: {}'.format(save_path))

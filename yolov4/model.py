@@ -10,14 +10,7 @@ from yolov4.config import cfg
 
 def mish(inputs):
     """Mish activation function"""
-    MISH_THRESH = 20.0
-    tmp = inputs
-    inputs = tf.where(tf.math.logical_and(tf.less(inputs, MISH_THRESH), tf.greater(inputs, -MISH_THRESH)),
-                      tf.log(1 + tf.exp(inputs)), tf.zeros_like(inputs))
-    inputs = tf.where(tf.less(inputs, -MISH_THRESH), tf.exp(inputs), inputs)
-    inputs = tmp * tf.tanh(inputs)
-    # return inputs * tf.tanh(tf.nn.softplus(inputs))
-    return inputs
+    return inputs * tf.tanh(tf.nn.softplus(inputs))
 
 
 def conv(input_data, filters_shape, trainable, name, downsample=False,
@@ -51,7 +44,7 @@ def conv(input_data, filters_shape, trainable, name, downsample=False,
                 # conv = tf.concat(conv, bias)
 
             # if activate == True: conv = tf.nn.leaky_relu(conv, alpha=0.1)
-            if activate == True:
+            if activate:
                 if act_fun == 'mish':
                     conv = mish(conv)
                 else:
@@ -134,6 +127,7 @@ def cspstage(input_data, trainable, filters, loop, layer_nums, route_nums, res_n
 
     return input_data, out_layer
 
+
 def cspdarknet53(input_data, trainable):
     """
     CSPDarknet53 body; source: https://arxiv.org/pdf/1911.11929.pdf
@@ -204,7 +198,6 @@ class YOLOV4(object):
 
         with tf.variable_scope('pred_lbbox'):
             self.pred_lbbox = self.decode(self.conv_lbbox, self.anchors[2], self.strides[2])
-
 
     def __build_network(self, input_data):
         """
@@ -302,7 +295,7 @@ class YOLOV4(object):
         conv_raw_xy = conv_ouput[:, :, :, :, 0:2]
         conv_raw_wh = conv_ouput[:, :, :, :, 2:4]
         conv_raw_conf = conv_ouput[:, :, :, :, 4:5]
-        conv_raw_prob = conv_ouput[:, :, :, :, 5: ]
+        conv_raw_prob = conv_ouput[:, :, :, :, 5:]
 
         y = tf.tile(tf.range(output_size, dtype=tf.int32)[:, tf.newaxis], [1, output_size])
         x = tf.tile(tf.range(output_size, dtype=tf.int32)[tf.newaxis, :], [output_size, 1])
@@ -312,7 +305,8 @@ class YOLOV4(object):
         xy_grid = tf.cast(xy_grid, tf.float32)
 
         bbox_xy = (tf.sigmoid(conv_raw_xy) + xy_grid) * strides
-        bbox_wh = (tf.sigmoid(conv_raw_wh) * anchors) * strides
+        # bbox_wh = (tf.sigmoid(conv_raw_wh) * anchors) * strides
+        bbox_wh = (tf.exp(conv_raw_wh) * anchors)
         pred_xywh = tf.concat([bbox_xy, bbox_wh], axis=-1)
 
         pred_box_confidence = tf.sigmoid(conv_raw_conf)
@@ -320,7 +314,8 @@ class YOLOV4(object):
 
         return tf.concat([pred_xywh, pred_box_confidence, pred_box_class_prob], axis=-1)
 
-    def bbox_iou(self, boxes1, boxes2):
+    @staticmethod
+    def bbox_iou(boxes1, boxes2):
         """
         Calculate bbox iou; source:
         :param boxes1: Tensor, shape=(i1,...,iN, 4), xywh
@@ -344,7 +339,8 @@ class YOLOV4(object):
 
         return iou
 
-    def bbox_giou(self, boxes1, boxes2):
+    @staticmethod
+    def bbox_giou(boxes1, boxes2):
         """
         Calculate giou loss; source: https://arxiv.org/abs/1902.09630
         :param boxes1: Tensor, shape=(batch, feat_w, feat_h, anchor_num, 4), xywh
@@ -380,7 +376,8 @@ class YOLOV4(object):
 
         return giou
 
-    def bbox_diou(self, boxes1, boxes2):
+    @staticmethod
+    def bbox_diou(boxes1, boxes2):
         """
         Calculate diou; source: https://arxiv.org/pdf/1911.08287v1.pdf
         :param boxes1: Tensor, shape=(batch, feat_w, feat_h, anchor_num, 4), xywh
@@ -409,17 +406,17 @@ class YOLOV4(object):
         union_area = boxes1_area + boxes2_area - inter_area
         iou = 1.0 * tf.compat.v1.div_no_nan(inter_area, union_area)
 
-        center_distance = tf.reduce_sum(tf.square(boxes1_center -boxes2_center), axis=-1)
+        center_distance = tf.reduce_sum(tf.square(boxes1_center - boxes2_center), axis=-1)
         enclose_left_up = tf.minimum(boxes1[..., :2], boxes2[..., :2])
         enclose_right_down = tf.maximum(boxes1[..., 2:], boxes2[..., 2:])
         enclose_wh = tf.maximum(enclose_right_down - enclose_left_up, 0.0)
         enclose_diagonal = tf.reduce_sum(tf.square(enclose_wh), axis=-1)
-
         diou = iou - 1.0 * tf.compat.v1.div_no_nan(center_distance, enclose_diagonal)
 
         return diou
 
-    def bbox_ciou(self, boxes1, boxes2):
+    @staticmethod
+    def bbox_ciou(boxes1, boxes2):
         """
         Calculate ciou; source: https://arxiv.org/pdf/1911.08287v1.pdf
         :param boxes1: Tensor, shape=(batch, feat_w, feat_h, anchor_num, 4), xywh
@@ -450,7 +447,7 @@ class YOLOV4(object):
         union_area = boxes1_area + boxes2_area - inter_area
         iou = 1.0 * tf.compat.v1.div_no_nan(inter_area, union_area)
 
-        center_distance = tf.reduce_sum(tf.square(boxes1_center -boxes2_center), axis=-1)
+        center_distance = tf.reduce_sum(tf.square(boxes1_center - boxes2_center), axis=-1)
         enclose_left_up = tf.minimum(boxes1[..., :2], boxes2[..., :2])
         enclose_right_down = tf.maximum(boxes1[..., 2:], boxes2[..., 2:])
         enclose_wh = tf.maximum(enclose_right_down - enclose_left_up, 0.0)
@@ -464,7 +461,8 @@ class YOLOV4(object):
 
         return ciou
 
-    def focal_loss(self, y_true, y_pred, gamma=2.0, alpha=1):
+    @staticmethod
+    def focal_loss(y_true, y_pred, gamma=2.0, alpha=1):
         """
         Compute focal loss; source:https://arxiv.org/abs/1708.02002
         :param y_true: Ground truth targets, tensor of shape (?, num_boxes, num_classes).
@@ -476,7 +474,8 @@ class YOLOV4(object):
         focal_loss = alpha * tf.pow(tf.abs(y_true - y_pred), gamma)
         return focal_loss
 
-    def _label_smoothing(self, y_true, label_smoothing):
+    @staticmethod
+    def _label_smoothing(y_true, label_smoothing):
         """Label smoothing. source: https://arxiv.org/pdf/1906.02629.pdf"""
         label_smoothing = tf.constant(label_smoothing, dtype=tf.float32)
         return y_true * (1.0 - label_smoothing) + 0.5 * label_smoothing

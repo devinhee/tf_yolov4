@@ -13,40 +13,41 @@ from yolov4.config import cfg
 
 os.environ['CUDA_VISIBLE_DEVICES'] = '0'
 
+
 class YoloTrain(object):
     def __init__(self):
-        self.anchor_per_scale    = cfg.YOLO.ANCHOR_PER_SCALE
-        self.classes             = utils.read_class_names(cfg.YOLO.CLASSES)
-        self.num_classes         = len(self.classes)
-        self.learn_rate_init     = cfg.TRAIN.LEARN_RATE_INIT
-        self.learn_rate_end      = cfg.TRAIN.LEARN_RATE_END
-        self.first_stage_epochs  = cfg.TRAIN.FISRT_STAGE_EPOCHS
+        self.anchor_per_scale = cfg.YOLO.ANCHOR_PER_SCALE
+        self.classes = utils.read_class_names(cfg.YOLO.CLASSES)
+        self.num_classes = len(self.classes)
+        self.learn_rate_init = cfg.TRAIN.LEARN_RATE_INIT
+        self.learn_rate_end = cfg.TRAIN.LEARN_RATE_END
+        self.first_stage_epochs = cfg.TRAIN.FISRT_STAGE_EPOCHS
         self.second_stage_epochs = cfg.TRAIN.SECOND_STAGE_EPOCHS
-        self.warmup_periods      = cfg.TRAIN.WARMUP_EPOCHS
-        self.initial_weight      = cfg.TRAIN.INITIAL_WEIGHT
-        self.time                = time.strftime('%Y-%m-%d-%H-%M-%S', time.localtime(time.time()))
-        self.moving_ave_decay    = cfg.YOLO.MOVING_AVE_DECAY
-        self.max_bbox_per_scale  = 150
-        self.train_logdir        = "./data/log/train"
-        self.trainset            = Dataset('train')
-        self.valset             = Dataset('test')
-        self.steps_per_period    = len(self.trainset)
-        self.sess                = tf.Session(config=tf.ConfigProto(allow_soft_placement=True))
+        self.warmup_periods = cfg.TRAIN.WARMUP_EPOCHS
+        self.initial_weight = cfg.TRAIN.INITIAL_WEIGHT
+        self.time = time.strftime('%Y-%m-%d-%H-%M-%S', time.localtime(time.time()))
+        self.moving_ave_decay = cfg.YOLO.MOVING_AVE_DECAY
+        self.max_bbox_per_scale = 150
+        self.train_logdir = "./data/log/train"
+        self.trainset = Dataset('train')
+        self.valset = Dataset('test')
+        self.steps_per_period = len(self.trainset)
+        self.sess = tf.Session(config=tf.ConfigProto(allow_soft_placement=True))
 
         with tf.name_scope('input'):
-            self.input_data   = tf.placeholder(dtype=tf.float32, name='input_data')
-            self.label_sbbox  = tf.placeholder(dtype=tf.float32, name='label_sbbox')
-            self.label_mbbox  = tf.placeholder(dtype=tf.float32, name='label_mbbox')
-            self.label_lbbox  = tf.placeholder(dtype=tf.float32, name='label_lbbox')
+            self.input_data = tf.placeholder(dtype=tf.float32, name='input_data')
+            self.label_sbbox = tf.placeholder(dtype=tf.float32, name='label_sbbox')
+            self.label_mbbox = tf.placeholder(dtype=tf.float32, name='label_mbbox')
+            self.label_lbbox = tf.placeholder(dtype=tf.float32, name='label_lbbox')
             self.true_sbboxes = tf.placeholder(dtype=tf.float32, name='sbboxes')
             self.true_mbboxes = tf.placeholder(dtype=tf.float32, name='mbboxes')
             self.true_lbboxes = tf.placeholder(dtype=tf.float32, name='lbboxes')
-            self.trainable    = tf.placeholder(dtype=tf.bool, name='training')
+            self.trainable = tf.placeholder(dtype=tf.bool, name='training')
 
         with tf.name_scope("define_loss"):
             iou_use = 1  # (0, 1, 2) ==> (giou_loss, diou_loss, ciou_loss)
             focal_use = False  # (False, True) ==> (normal, focal_loss)
-            label_smoothing = 0
+            label_smoothing = 0  # 0.001
             self.model = YOLOV4(self.input_data, self.trainable)
             self.net_var = tf.global_variables()
             self.iou_loss, self.conf_loss, self.prob_loss = self.model.compute_loss(
@@ -59,9 +60,9 @@ class YoloTrain(object):
         with tf.name_scope('learn_rate'):
             self.global_step = tf.Variable(1.0, dtype=tf.float64, trainable=False, name='global_step')
             warmup_steps = tf.constant(self.warmup_periods * self.steps_per_period,
-                                        dtype=tf.float64, name='warmup_steps')
-            train_steps = tf.constant( (self.first_stage_epochs + self.second_stage_epochs)* self.steps_per_period,
-                                        dtype=tf.float64, name='train_steps')
+                                       dtype=tf.float64, name='warmup_steps')
+            train_steps = tf.constant((self.first_stage_epochs + self.second_stage_epochs) * self.steps_per_period,
+                                      dtype=tf.float64, name='train_steps')
             self.learn_rate = tf.cond(
                 pred=self.global_step < warmup_steps,
                 true_fn=lambda: self.global_step / warmup_steps * self.learn_rate_init,
@@ -83,7 +84,7 @@ class YoloTrain(object):
                     self.first_stage_trainable_var_list.append(var)
 
             first_stage_optimizer = tf.train.AdamOptimizer(self.learn_rate).minimize(self.loss,
-                                                      var_list=self.first_stage_trainable_var_list)
+                                                    var_list=self.first_stage_trainable_var_list)
             with tf.control_dependencies(tf.get_collection(tf.GraphKeys.UPDATE_OPS)):
                 with tf.control_dependencies([first_stage_optimizer, global_step_update]):
                     with tf.control_dependencies([moving_ave]):
@@ -92,7 +93,7 @@ class YoloTrain(object):
         with tf.name_scope("define_second_stage_train"):
             second_stage_trainable_var_list = tf.trainable_variables()
             second_stage_optimizer = tf.train.AdamOptimizer(self.learn_rate).minimize(self.loss,
-                                                      var_list=second_stage_trainable_var_list)
+                                                    var_list=second_stage_trainable_var_list)
 
             with tf.control_dependencies(tf.get_collection(tf.GraphKeys.UPDATE_OPS)):
                 with tf.control_dependencies([second_stage_optimizer, global_step_update]):
@@ -101,22 +102,21 @@ class YoloTrain(object):
 
         with tf.name_scope('loader_and_saver'):
             self.loader = tf.train.Saver(self.net_var)
-            self.saver  = tf.train.Saver(tf.global_variables(), max_to_keep=10)
+            self.saver = tf.train.Saver(tf.global_variables(), max_to_keep=10)
             # self.saver  = tf.train.Saver(tf.trainable_variables(), max_to_keep=10)
 
         with tf.name_scope('summary'):
-            tf.summary.scalar("learn_rate",      self.learn_rate)
-            tf.summary.scalar("iou_loss",  self.iou_loss)
-            tf.summary.scalar("conf_loss",  self.conf_loss)
-            tf.summary.scalar("prob_loss",  self.prob_loss)
+            tf.summary.scalar("learn_rate", self.learn_rate)
+            tf.summary.scalar("iou_loss", self.iou_loss)
+            tf.summary.scalar("conf_loss", self.conf_loss)
+            tf.summary.scalar("prob_loss", self.prob_loss)
             tf.summary.scalar("total_loss", self.loss)
 
             logdir = "./data/log/"
             if os.path.exists(logdir): shutil.rmtree(logdir)
             os.mkdir(logdir)
             self.write_op = tf.summary.merge_all()
-            self.summary_writer  = tf.summary.FileWriter(logdir, graph=self.sess.graph)
-
+            self.summary_writer = tf.summary.FileWriter(logdir, graph=self.sess.graph)
 
     def train(self):
         self.sess.run(tf.global_variables_initializer())
@@ -145,7 +145,7 @@ class YoloTrain(object):
 
             for train_data in pbar:
                 _, summary, train_step_loss, global_step_val = self.sess.run(
-                    [train_op, self.write_op, self.loss, self.global_step],feed_dict={
+                    [train_op, self.write_op, self.loss, self.global_step], feed_dict={
                                                 self.input_data:   train_data[0],
                                                 self.label_sbbox:  train_data[1],
                                                 self.label_mbbox:  train_data[2],
@@ -158,10 +158,10 @@ class YoloTrain(object):
 
                 train_epoch_loss.append(train_step_loss)
                 self.summary_writer.add_summary(summary, global_step_val)
-                pbar.set_description("train loss: %.2f" %train_step_loss)
+                pbar.set_description("train loss: %.2f" % train_step_loss)
 
             for val_data in self.valset:
-                val_step_loss = self.sess.run( self.loss, feed_dict={
+                val_step_loss = self.sess.run(self.loss, feed_dict={
                                                 self.input_data:   val_data[0],
                                                 self.label_sbbox:  val_data[1],
                                                 self.label_mbbox:  val_data[2],
@@ -179,25 +179,29 @@ class YoloTrain(object):
             ckpt_file = "./checkpoint/yolov4_val_loss=%.4f.ckpt" % val_epoch_loss
             log_time = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(time.time()))
             if saving == 0.0:
-                saving = val_epoch_loss
-                print("=> Epoch: %2d Time: %s Val loss: %.2f"
-                      % (epoch, log_time, val_epoch_loss))
+                if frozen_epoch > 0:
+                    org_val_loss = float('.'.join(self.initial_weight.split('=')[-1].split('.')[:2]))
+                    saving = org_val_loss
+                else:
+                    saving = val_epoch_loss
+                print("=> Epoch: %2d Time: %s Val loss: %.2f" % (epoch, log_time, val_epoch_loss))
             elif saving > val_epoch_loss:
                 print("=> Epoch: %2d Time: %s Train loss: %.2f Val loss: %.2f Saving %s ..."
-                                %(epoch, log_time, train_epoch_loss, val_epoch_loss, ckpt_file))
+                      % (epoch, log_time, train_epoch_loss, val_epoch_loss, ckpt_file))
                 self.saver.save(self.sess, ckpt_file, global_step=epoch)
                 saving = val_epoch_loss
                 early_stop = 0
             else:
-                early_stop += 1
-                print("=> Epoch: %2d Time: %s Val loss: %.2f"
-                      % (epoch, log_time, val_epoch_loss))
-                if early_stop > 5:
-                    self.sess.close()
+                if early_stop > 10:
+                    self.saver.save(self.sess, ckpt_file, global_step=epoch)
                     break
+                print("=> Epoch: %2d Time: %s Val loss: %.2f" % (epoch, log_time, val_epoch_loss))
+                early_stop += 1
+        self.saver.save(self.sess, ckpt_file, global_step=epoch)
 
 
-if __name__ == '__main__': YoloTrain().train()
+if __name__ == '__main__':
+    YoloTrain().train()
 
 
 

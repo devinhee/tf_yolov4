@@ -9,13 +9,13 @@ from PIL import Image
 
 
 return_elements = ["input/input_data:0", "pred_sbbox/concat_2:0", "pred_mbbox/concat_2:0", "pred_lbbox/concat_2:0"]
-pb_file         = "./checkpoint/yolov4.pb"
-video_path      = "./data/images/road.mp4"
+pb_file = "./checkpoint/yolov4.pb"
+video_path = "./data/images/road.mp4"
 # video_path      = 0
-num_classes     = 80
-input_size      = 416
-graph           = tf.Graph()
-return_tensors  = utils.read_pb_return_tensors(graph, pb_file, return_elements)
+num_classes = 80
+input_size = 416
+graph = tf.Graph()
+return_tensors = utils.read_pb_return_tensors(graph, pb_file, return_elements)
 
 with tf.Session(graph=graph) as sess:
     vid = cv2.VideoCapture(video_path)
@@ -32,7 +32,7 @@ with tf.Session(graph=graph) as sess:
 
             pred_sbbox, pred_mbbox, pred_lbbox = sess.run(
                 [return_tensors[1], return_tensors[2], return_tensors[3]],
-                        feed_dict={ return_tensors[0]: image_data})
+                feed_dict={return_tensors[0]: image_data})
 
             pred_bbox = np.concatenate([np.reshape(pred_sbbox, (-1, 5 + num_classes)),
                                         np.reshape(pred_mbbox, (-1, 5 + num_classes)),
@@ -45,7 +45,7 @@ with tf.Session(graph=graph) as sess:
             curr_time = time.time()
             exec_time = curr_time - prev_time
             # result = np.asarray(image)
-            info = "time: %.2f ms" %(1000*exec_time)
+            info = "time: %.2f ms" % (1000*exec_time)
             cv2.namedWindow("result", cv2.WINDOW_AUTOSIZE)
             result = cv2.cvtColor(image, cv2.COLOR_RGB2BGR)
             cv2.imshow("result", result)

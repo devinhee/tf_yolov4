@@ -9,14 +9,13 @@ import yolov4.utils as utils
 from yolov4.config import cfg
 
 
-
 class Dataset(object):
     """implement Dataset here"""
     def __init__(self, dataset_type):
-        self.annot_path  = cfg.TRAIN.ANNOT_PATH if dataset_type == 'train' else cfg.TEST.ANNOT_PATH
+        self.annot_path = cfg.TRAIN.ANNOT_PATH if dataset_type == 'train' else cfg.TEST.ANNOT_PATH
         self.input_sizes = cfg.TRAIN.INPUT_SIZE if dataset_type == 'train' else cfg.TEST.INPUT_SIZE
-        self.batch_size  = cfg.TRAIN.BATCH_SIZE if dataset_type == 'train' else cfg.TEST.BATCH_SIZE
-        self.data_aug    = cfg.TRAIN.DATA_AUG   if dataset_type == 'train' else cfg.TEST.DATA_AUG
+        self.batch_size = cfg.TRAIN.BATCH_SIZE if dataset_type == 'train' else cfg.TEST.BATCH_SIZE
+        self.data_aug = cfg.TRAIN.DATA_AUG if dataset_type == 'train' else cfg.TEST.DATA_AUG
 
         self.train_input_sizes = cfg.TRAIN.INPUT_SIZE
         self.strides = np.array(cfg.YOLO.STRIDES)
@@ -31,7 +30,6 @@ class Dataset(object):
         self.num_batchs = int(np.ceil(self.num_samples / self.batch_size))
         self.batch_count = 0
 
-
     def load_annotations(self, dataset_type):
         with open(self.annot_path, 'r') as f:
             txt = f.readlines()
@@ -45,7 +43,8 @@ class Dataset(object):
     def __next__(self):
 
         with tf.device('/cpu:0'):
-            self.train_input_size = random.choice(self.train_input_sizes)
+            # self.train_input_size = random.choice(self.train_input_sizes)
+            self.train_input_size = self.train_input_sizes
             self.train_output_sizes = self.train_input_size // self.strides
 
             batch_image = np.zeros((self.batch_size, self.train_input_size, self.train_input_size, 3))
@@ -65,7 +64,8 @@ class Dataset(object):
             if self.batch_count < self.num_batchs:
                 while num < self.batch_size:
                     index = self.batch_count * self.batch_size + num
-                    if index >= self.num_samples: index -= self.num_samples
+                    if index >= self.num_samples:
+                        index -= self.num_samples
                     annotation = self.annotations[index]
                     image, bboxes = self.parse_annotation(annotation)
                     label_sbbox, label_mbbox, label_lbbox, sbboxes, mbboxes, lbboxes = self.preprocess_true_boxes(bboxes)
@@ -86,16 +86,18 @@ class Dataset(object):
                 np.random.shuffle(self.annotations)
                 raise StopIteration
 
-    def random_horizontal_flip(self, image, bboxes):
+    @staticmethod
+    def random_horizontal_flip(image, bboxes):
 
         if random.random() < 0.5:
             _, w, _ = image.shape
             image = image[:, ::-1, :]
-            bboxes[:, [0,2]] = w - bboxes[:, [2,0]]
+            bboxes[:, [0, 2]] = w - bboxes[:, [2, 0]]
 
         return image, bboxes
 
-    def random_crop(self, image, bboxes):
+    @staticmethod
+    def random_crop(image, bboxes):
 
         if random.random() < 0.5:
             h, w, _ = image.shape
@@ -111,14 +113,15 @@ class Dataset(object):
             crop_xmax = max(w, int(max_bbox[2] + random.uniform(0, max_r_trans)))
             crop_ymax = max(h, int(max_bbox[3] + random.uniform(0, max_d_trans)))
 
-            image = image[crop_ymin : crop_ymax, crop_xmin : crop_xmax]
+            image = image[crop_ymin: crop_ymax, crop_xmin: crop_xmax]
 
             bboxes[:, [0, 2]] = bboxes[:, [0, 2]] - crop_xmin
             bboxes[:, [1, 3]] = bboxes[:, [1, 3]] - crop_ymin
 
         return image, bboxes
 
-    def random_translate(self, image, bboxes):
+    @staticmethod
+    def random_translate(image, bboxes):
 
         if random.random() < 0.5:
             h, w, _ = image.shape
@@ -145,7 +148,7 @@ class Dataset(object):
         line = annotation.split()
         image_path = line[0]
         if not os.path.exists(image_path):
-            raise KeyError("%s does not exist ... " %image_path)
+            raise KeyError("%s does not exist ... " % image_path)
         image = np.array(cv2.imread(image_path))
         bboxes = np.array([list(map(lambda x: int(float(x)), box.split(','))) for box in line[1:]])
 
@@ -157,7 +160,8 @@ class Dataset(object):
         image, bboxes = utils.image_preporcess(np.copy(image), [self.train_input_size, self.train_input_size], np.copy(bboxes))
         return image, bboxes
 
-    def bbox_iou(self, boxes1, boxes2):
+    @staticmethod
+    def bbox_iou(boxes1, boxes2):
 
         boxes1 = np.array(boxes1)
         boxes2 = np.array(boxes2)
@@ -177,10 +181,10 @@ class Dataset(object):
         inter_area = inter_section[..., 0] * inter_section[..., 1]
         union_area = boxes1_area + boxes2_area - inter_area
 
-        return tf.compat.v1.div_no_nan(inter_area, union_area)
+        # return tf.compat.v1.div_no_nan(inter_area, union_area)
+        return inter_area / (union_area + 1e-7)
 
     def preprocess_true_boxes(self, bboxes):
-
         label = [np.zeros((self.train_output_sizes[i], self.train_output_sizes[i], self.anchor_per_scale,
                            5 + self.num_classes)) for i in range(3)]
         bboxes_xywh = [np.zeros((self.max_bbox_per_scale, 4)) for _ in range(3)]
