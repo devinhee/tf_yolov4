@@ -20,7 +20,7 @@ mAP: 59.77%
 
 ![Detection_results](https://github.com/devinhee/tf_yolov4/blob/master/mAP/VOC_mAP/detection-results-info.png)
 
-![GT](https://github.com/devinhee/tf_yolov4/blob/master/mAP/VOC_mAP/ground-truth-info.png)
+![GT](https://raw.githubusercontent.com/devinhee/tf_yolov4/master/mAP/VOC_mAP/ground-truth-info.png)
 
 
 
