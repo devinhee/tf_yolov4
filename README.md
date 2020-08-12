@@ -17,7 +17,7 @@ Head: YOLOv3(Leaky_ReLU)[[10]](https://arxiv.org/abs/1804.02767);
 Loss: DIOU CIOU[[5]](https://arxiv.org/pdf/1911.08287v1.pdf), Focal_Loss[[6]](https://arxiv.org/abs/1708.02002);  Other: Label_Smoothing[[7]](https://arxiv.org/pdf/1906.02629.pdf);
 
 ---
-**[Evaluate](https://github.com/devinhee/tf_yolov4/blob/master/mAP/VOC_mAP/voc_mAP.md)**
+## **Evaluate**
 
 **GeForce GTX 1080 Ti：**
 
