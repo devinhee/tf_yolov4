@@ -17,7 +17,18 @@ Head: YOLOv3(Leaky_ReLU)[[10]](https://arxiv.org/abs/1804.02767);
 Loss: DIOU CIOU[[5]](https://arxiv.org/pdf/1911.08287v1.pdf), Focal_Loss[[6]](https://arxiv.org/abs/1708.02002);  Other: Label_Smoothing[[7]](https://arxiv.org/pdf/1906.02629.pdf);
 
 ---
-**[Eval: VOC, 512x512, mAP=59.77%](https://github.com/devinhee/tf_yolov4/blob/master/mAP/VOC_mAP/voc_mAP.md)**
+**[Evaluate](https://github.com/devinhee/tf_yolov4/blob/master/mAP/VOC_mAP/voc_mAP.md)**
+
+**GeForce GTX 1080 Ti：**
+
+Train and Val sets: VOCtrainval_11-May-2012; 
+Test set: VOCtest_06-Nov-2007;
+
+|         Network        |     Size     | FPS(avg) |    mAP   |   weights   |
+|:----------------------:|:------------:|:--------:|:--------:|:-----------:|
+| Darknet53_spp_pan_ciou |    608x608   |    23    |**[62.52%](https://raw.githubusercontent.com/devinhee/tf_yolov4/master/mAP/VOC_mAP/608x608/mAP.png)**|  [yolov4.pb](https://pan.baidu.com/s/1d9N2eE3Hu_A4Rww4MLQAGA) kvn3  |
+| Darknet53_spp_pan_ciou |    512x512   |    29    |**[59.77%](https://raw.githubusercontent.com/devinhee/tf_yolov4/master/mAP/VOC_mAP/512x512/mAP.png)**|  [yolov4.pb](https://pan.baidu.com/s/1GaXn32_F_VHBtXVskHGfWg) fwkc  |
+| Darknet53_spp_pan_ciou |    416x416   |    36    |**[55.01%](https://raw.githubusercontent.com/devinhee/tf_yolov4/master/mAP/VOC_mAP/416x416/mAP.png)**|  [yolov4.pb](https://pan.baidu.com/s/1Ud_cF9CPbBvZc_FDvV6dCA) li3p  |
 
 ---
 
