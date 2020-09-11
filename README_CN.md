@@ -2,14 +2,11 @@
 
 [![license](https://img.shields.io/github/license/mashape/apistatus.svg)](LICENSE)
 
+## 介绍
 
-## [English](https://raw.githubusercontent.com/devinhee/tf_yolov4/master/README.md) | [Chinese](https://raw.githubusercontent.com/devinhee/tf_yolov4/master/README_CN.md)
+构建YOLOV4模型受启发于 [https://github.com/AlexeyAB/darknet](https://github.com/AlexeyAB/darknet).
 
-## Introduction
-
-A tensorflow implementation of YOLOv4 inspired by [https://github.com/AlexeyAB/darknet](https://github.com/AlexeyAB/darknet).
-
-Frame code from [https://github.com/YunYang1994/tensorflow-yolov3](https://github.com/YunYang1994/tensorflow-yolov3).
+模型主结构来源于 [https://github.com/YunYang1994/tensorflow-yolov3](https://github.com/YunYang1994/tensorflow-yolov3).
 
 Backbone: CSPDarknet53[[1]](https://arxiv.org/pdf/1911.11929.pdf), Mish[[2]](https://arxiv.org/abs/1908.08681); 
 
@@ -17,15 +14,15 @@ Neck: SPP[[3]](https://arxiv.org/abs/1406.4729), PAN[[4]](https://arxiv.org/abs/
 
 Head: YOLOv3(Leaky_ReLU)[[10]](https://arxiv.org/abs/1804.02767); 
 
-Loss: DIOU CIOU[[5]](https://arxiv.org/pdf/1911.08287v1.pdf), Focal_Loss[[6]](https://arxiv.org/abs/1708.02002);  Other: Label_Smoothing[[7]](https://arxiv.org/pdf/1906.02629.pdf);
+Loss函数: DIOU CIOU[[5]](https://arxiv.org/pdf/1911.08287v1.pdf), Focal_Loss[[6]](https://arxiv.org/abs/1708.02002);  Other: Label_Smoothing[[7]](https://arxiv.org/pdf/1906.02629.pdf);
 
 ---
-## **Evaluate**
+## **模型评估**
 
 **GeForce GTX 1080 Ti：**
 
-Train and Val sets: VOCtrainval_11-May-2012; 
-Test set: VOCtest_06-Nov-2007;
+训练验证集: VOCtrainval_11-May-2012; 
+测试集: VOCtest_06-Nov-2007;
 
 |         Network        |     Size     | FPS(avg) |    mAP   |   weights   |
 |:----------------------:|:------------:|:--------:|:--------:|:-----------:|
@@ -35,7 +32,7 @@ Test set: VOCtest_06-Nov-2007;
 
 ---
 
-## Environment
+## 运行环境
 
 Python 3.6.8
 
@@ -43,25 +40,25 @@ Tensorflow 1.13.1
 
 ---
 
-## Quick Start
+## 快速开始
 
-1. Download YOLOv4 weights from [yolov4.weights](https://drive.google.com/open?id=1cewMfusmPjYWbrnuJRuKhPMwRe_b9PaT).
-2. Convert the Darknet YOLOv4 model to a tf model.
-3. Run YOLOv4 detection.
+1. 从这里 [yolov4.weights](https://drive.google.com/open?id=1cewMfusmPjYWbrnuJRuKhPMwRe_b9PaT) 下载预训练的权重.
+2. 将权重文件转换为tf模型.
+3. 运行 YOLOv4 进行检测.
 
-Running from_darknet_weights_to_ckpt.py will get tf yolov4 weight file yolov4_coco.ckpt.
+运行 from_darknet_weights_to_ckpt.py 就会得到yolov4 tf模型的.ckpt权重文件 yolov4_coco.ckpt.
 
 ```
 python from_darknet_weights_to_ckpt.py
 ```
 
-Running ckpt2pb.py will get tf yolov4 weight file yolov4.pb.
+再运行 ckpt2pb.py 就会得到yolov4 tf模型的.pb权重文件 yolov4.pb.
 
 ```
 python ckpt2pb.py
 ```
 
-Or running from_darknet_weights_to_pb.py directly.
+或者直接运行 from_darknet_weights_to_pb.py 得到.pd权重文件.
 
 ```
 python from_darknet_weights_to_pb.py
@@ -71,15 +68,15 @@ python from_darknet_weights_to_pb.py
 
 ### Usage
 
-Inference
+模型demo展示
 
 ```
 python image_demo.py
 ```
 
-### train
+### 训练
 
-to yolov4/config.py add your own path.
+进入 yolov4/config.py 脚本添加你自己的相关路径.
 
 ```
 python train.py
@@ -87,7 +84,7 @@ python train.py
 
 ---
 
-### Reference
+### 参考文章
 
 [[1] Cross Stage Partial Network (CSPNet)](https://arxiv.org/pdf/1911.11929.pdf)
 
@@ -111,7 +108,7 @@ python train.py
 
 [[11] Aggregated Residual Transformations for Deep Neural Networks](https://arxiv.org/abs/1611.05431)
 
-### Acknowledgment
+### 致谢！
 
 keras_yolov3 [https://github.com/qqwweee/keras-yolo3](https://github.com/qqwweee/keras-yolo3).
 
