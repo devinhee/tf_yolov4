@@ -3,7 +3,7 @@
 [![license](https://img.shields.io/github/license/mashape/apistatus.svg)](LICENSE)
 
 
-## [English](https://raw.githubusercontent.com/devinhee/tf_yolov4/master/README.md) | [Chinese](https://raw.githubusercontent.com/devinhee/tf_yolov4/master/README_CN.md)
+## [English](https://raw.githubusercontent.com/devinhee/tf_yolov4/README.md) | [Chinese](https://raw.githubusercontent.com/devinhee/tf_yolov4/README_CN.md)
 
 ## Introduction
 
